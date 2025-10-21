@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
         try {
           // Fetch user details from Whop
-          const user = await whopSdk.users.retrieve(activity.user_id);
+          const user = await whopSdk.users.getUser({ userId: activity.user_id });
 
           if (!user) {
             console.log(`User not found: ${activity.user_id}`);
