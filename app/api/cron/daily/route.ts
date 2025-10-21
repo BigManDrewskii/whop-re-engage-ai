@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { whopSdk } from '@/lib/whop';
+import { whopSdk } from '@/lib/whop-sdk';
 import { supabase } from '@/lib/supabase';
 import { generateReEngagementMessage } from '@/lib/ai';
 
@@ -45,35 +45,32 @@ export async function GET(request: NextRequest) {
         processedCount++;
 
         try {
-          // Fetch member details from Whop
-          const member = await whopSdk.companies.getMember({
-            userId: activity.user_id,
-            companyId: activity.company_id,
-          });
+          // Fetch user details from Whop
+          const user = await whopSdk.users.retrieve(activity.user_id);
 
-          if (!member) {
-            console.log(`Member not found: ${activity.user_id}`);
+          if (!user) {
+            console.log(`User not found: ${activity.user_id}`);
             continue;
           }
 
           // Generate personalized AI message
           const message = await generateReEngagementMessage({
-            name: member.user.name || 'there',
-            email: member.user.email,
-            joined_at: member.joined_at,
-            user_id: member.user_id,
+            name: user.name || 'there',
+            email: '', // Not available in user object
+            joined_at: user.created_at,
+            user_id: user.id,
           });
 
           // Send notification via Whop
           await whopSdk.notifications.createNotificationRequest({
             body: {
-              title: `Hey ${member.user.name}, we miss you! 💙`,
+              title: `Hey ${user.name || 'there'}, we miss you! 💙`,
               content: message,
             },
             topics: [
               {
                 topic_identifier: 'reengage',
-                users: [member.user_id],
+                users: [activity.user_id],
               },
             ],
             target: {
@@ -92,10 +89,10 @@ export async function GET(request: NextRequest) {
             .eq('company_id', activity.company_id);
 
           sentCount++;
-          console.log(`Sent re-engagement to ${member.user.name}`);
+          console.log(`Sent re-engagement to ${user.name || activity.user_id}`);
         } catch (error) {
           console.error(
-            `Error processing member ${activity.user_id}:`,
+            `Error processing user ${activity.user_id}:`,
             error
           );
         }
