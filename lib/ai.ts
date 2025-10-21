@@ -1,14 +1,15 @@
 import OpenAI from 'openai';
 
-// OpenAI client is pre-configured via environment variables
-// OPENAI_API_KEY and OPENAI_BASE_URL are already set
-const openai = new OpenAI();
-
 export interface MemberData {
   name: string;
   email: string;
   joined_at: string;
   user_id: string;
+}
+
+// Lazy-load OpenAI client to avoid build-time initialization
+function getOpenAIClient() {
+  return new OpenAI();
 }
 
 export async function generateReEngagementMessage(
@@ -32,6 +33,8 @@ Requirements:
 Write only the message, nothing else.`;
 
   try {
+    const openai = getOpenAIClient();
+    
     const completion = await openai.chat.completions.create({
       model: 'gpt-4.1-mini', // Using Manus-provided model
       messages: [
