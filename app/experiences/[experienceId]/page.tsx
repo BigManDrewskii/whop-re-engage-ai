@@ -20,7 +20,7 @@ export default async function ExperiencePage({
 	const experience = await whopSdk.experiences.getExperience({ experienceId });
 
 	// Get company ID from experience
-	const companyId = experience.company_id;
+	const companyId = experience.company.id;
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">

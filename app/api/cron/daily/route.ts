@@ -57,25 +57,16 @@ export async function GET(request: NextRequest) {
           const message = await generateReEngagementMessage({
             name: user.name || 'there',
             email: '', // Not available in user object
-            joined_at: user.created_at,
+            joined_at: new Date(user.createdAt * 1000).toISOString(),
             user_id: user.id,
           });
 
           // Send notification via Whop
-          await whopSdk.notifications.createNotificationRequest({
-            body: {
-              title: `Hey ${user.name || 'there'}, we miss you! 💙`,
-              content: message,
-            },
-            topics: [
-              {
-                topic_identifier: 'reengage',
-                users: [activity.user_id],
-              },
-            ],
-            target: {
-              company: activity.company_id,
-            },
+          await whopSdk.notifications.sendPushNotification({
+            title: `Hey ${user.name || 'there'}, we miss you! 💙`,
+            content: message,
+            companyTeamId: activity.company_id,
+            userIds: [activity.user_id],
           });
 
           // Update status in database
