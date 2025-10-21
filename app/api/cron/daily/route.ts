@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
         try {
           // Fetch member details from Whop
-          const member = await whopSdk.app.members.getMember({
+          const member = await whopSdk.companies.getMember({
             userId: activity.user_id,
             companyId: activity.company_id,
           });
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
           });
 
           // Send notification via Whop
-          await whopSdk.app.notifications.createNotificationRequest({
+          await whopSdk.notifications.createNotificationRequest({
             body: {
               title: `Hey ${member.user.name}, we miss you! 💙`,
               content: message,
